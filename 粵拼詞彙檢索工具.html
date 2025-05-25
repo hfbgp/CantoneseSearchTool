@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>粵拼詞彙檢索工具</title>
   <style>
     body { font-family: "Noto Sans HK", "Microsoft JhengHei", "Noto Sans SC", "Microsoft YaHei", Arial, sans-serif; margin: 30px; background: #f7f7fa;}
@@ -19,7 +20,12 @@
     .btn { padding: 4px 16px; border-radius: 4px; font-size: 15px; min-width: unset; }
     .btn:hover { background: #e4e4e4; }
     .highlight { background: #ffe082 !important; cursor: pointer; }
-    .search-mode { margin-left: 12px; }
+    .search-mode {
+    display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
     .del-btn { color: #fff; background: #e57373; border: none; border-radius: 4px; padding: 2px 10px; cursor: pointer; }
     .del-btn:hover { background: #d32f2f; }
     .copy-btn { color: #fff; background: #64b5f6; border: none; border-radius: 4px; padding: 2px 10px; cursor: pointer; margin-left: 4px;}
@@ -63,6 +69,65 @@
       right: 40px;
       z-index: 100;
     }
+    @media (max-width: 600px) {
+   .search-mode { gap: 8px; }
+   .search-mode label { font-size: 15px; gap: 4px; width: auto; }
+    body {
+      margin: 8px;
+      font-size: 15px;
+     }
+  .container {
+      padding: 0 2px;
+      gap: 14px;
+      max-width: 100%;
+    }
+  .search-bar {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+  .search-bar label, .search-bar input, .search-bar .search-mode, .search-bar button {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
+  .search-bar input[type="text"] {
+      width: 100% !important;
+    }
+  .button-group {
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+  .result-block {
+      padding: 8px;
+    }
+  .result-table th, .result-table td {
+      padding: 4px 6px;
+      font-size: 14px;
+      word-break: break-all;
+    }
+  .lang-switch {
+      top: 8px;
+      right: 8px;
+    }
+  .scroll-top-btn {
+      right: 10px;
+      bottom: 10px;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+    h1 {
+      font-size: 1.2em;
+    }
+  }
+  .search-mode label {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    gap: 4px;
+    margin: 0;
+    width: auto;
+  }
   </style>
 <script>
 window.jyutpingDictText = `
@@ -90,7 +155,7 @@ Call loan	ko1 lou1
   <div class="container">
     <div class="search-bar">
       <label for="searchInput" id="inputLabel">輸入粵拼或詞彙：</label>
-      <input id="searchInput" type="text" placeholder="英文、數字（例：Quali、7、ngoi3 hou3、ngoi hou、oi hou、oi3 hou3）" autocomplete="off" style="width:400px;"/>
+      <input id="searchInput" type="text" placeholder="英文、數字（例：Quali、67、ngoi3 hou3、ngoi hou、oi hou、oi3 hou3）" autocomplete="off" style="width:100%;max-width:400px;"/>
       <span class="search-mode" id="searchMode">
         <label><input type="radio" name="matchMode" value="exact" checked id="modeExact">完全匹配</label>
         <label><input type="radio" name="matchMode" value="fuzzy" id="modeFuzzy" title="查找時間可能會比較長">模糊匹配</label>
@@ -206,7 +271,7 @@ Call loan	ko1 lou1
         title: "粵拼詞彙檢索工具",
         headline: "粵拼詞彙檢索工具",
         inputLabel: "輸入粵拼或詞彙：",
-        searchPlaceholder: "英文、數字（例：Quali、7、ngoi3 hou3、ngoi hou、oi hou、oi3 hou3）",
+        searchPlaceholder: "英文、數字（例：Quali、67、ngoi3 hou3、ngoi hou、oi hou、oi3 hou3）",
         modeExact: "完全匹配",
         modeFuzzy: "模糊匹配",
         fuzzyTip: "查找時間可能會比較長",
@@ -244,7 +309,7 @@ Call loan	ko1 lou1
         title: "粤拼词汇检索工具",
         headline: "粤拼词汇检索工具",
         inputLabel: "输入粤拼或词汇：",
-        searchPlaceholder: "英文、数字（例：Quali、7、ngoi3 hou3、ngoi hou、oi hou、oi3 hou3）",
+        searchPlaceholder: "英文、数字（例：Quali、67、ngoi3 hou3、ngoi hou、oi hou、oi3 hou3）",
         modeExact: "完全匹配",
         modeFuzzy: "模糊匹配",
         fuzzyTip: "查找时间可能会比较长",
