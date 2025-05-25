@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>粵拼詞彙檢索工具</title>
+  <style>
+    body { font-family: "Noto Sans HK", "Microsoft JhengHei", "Noto Sans SC", "Microsoft YaHei", Arial, sans-serif; margin: 30px; background: #f7f7fa;}
+    h1 { text-align: center; }
+    .container { display: flex; flex-direction: column; gap: 24px; max-width: 900px; margin: 0 auto;}
+    .search-bar { display: flex; gap: 10px; align-items: center; }
+    .result-block { background: #fff; padding: 16px; border-radius: 8px; box-shadow: 0 1px 4px #ddd; }
+    .result-title { margin-bottom: 8px; }
+    .result-hint { color: red; font-size: 14px; margin-bottom: 6px; }
+    textarea, .result-table { width: 100%; min-height: 60px; font-size: 15px; font-family: inherit; }
+    .result-table { border-collapse: collapse; }
+    .result-table th, .result-table td { border: 1px solid #ccc; padding: 6px 12px; }
+    .result-table th { background: #f2f2f2; cursor: pointer; }
+    .button-group { margin: 6px 0; display: flex; gap: 8px; }
+    .btn { padding: 4px 16px; border-radius: 4px; font-size: 15px; min-width: unset; }
+    .btn:hover { background: #e4e4e4; }
+    .highlight { background: #ffe082 !important; cursor: pointer; }
+    .search-mode { margin-left: 12px; }
+    .del-btn { color: #fff; background: #e57373; border: none; border-radius: 4px; padding: 2px 10px; cursor: pointer; }
+    .del-btn:hover { background: #d32f2f; }
+    .copy-btn { color: #fff; background: #64b5f6; border: none; border-radius: 4px; padding: 2px 10px; cursor: pointer; margin-left: 4px;}
+    .copy-btn:hover { background: #1976d2; }
+    .speak-btn { color: #fff; background: #81c784; border: none; border-radius: 4px; padding: 2px 10px; cursor: pointer; margin-left: 4px;}
+    .speak-btn:hover { background: #388e3c; }
+    .row-selected { background: #ffe082 !important; }
+    .highlight-link, .hover-highlight { background: #ffe082 !important; cursor: pointer; text-decoration: none !important; }
+    .highlight-link:hover, .hover-highlight:hover {  background: #ff8000 !important;
+      /* 其他 hover 效果寫這裡即可 */
+    }
+    .result-table td.copyable {
+      user-select: text !important;
+      cursor: text !important;
+      text-decoration: none !important;
+    }
+    .scroll-top-btn {
+      position: fixed;
+      right: 36px;
+      bottom: 36px;
+      z-index: 9999;
+      padding: 10px 20px;
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 22px;
+      font-size: 16px;
+      box-shadow: 0 2px 8px #aaa;
+      cursor: pointer;
+      font-weight: bold;
+      opacity: 0.8;
+      transition: opacity 0.15s, background 0.15s;
+    }
+    .scroll-top-btn:hover {
+      opacity: 1;
+      background: #1251a2;
+    }
+    .lang-switch {
+      position: absolute;
+      top: 24px;
+      right: 40px;
+      z-index: 100;
+    }
+  </style>
+<script>
+window.jyutpingDictText = `
+廣東話	gwong2 dung1 waa2
+有	jau5	11175341
+愛好	oi3 hou3
+愛好	ngoi3 hou3
+啊 	aa3
+啊	a6
+happy	he pi
+Quali	kol1 li2
+亞Sir	aa3 soe4
+老rob	lou5 lap1
+Call loan	ko1 lou1
+
+
+`;
+</script>
+</head>
+<body>
+  <div class="lang-switch">
+    <button class="btn" id="switchLangBtn" onclick="switchLang()"></button>
+  </div>
+  <h1 id="headline">粵拼詞彙檢索工具</h1>
+  <div class="container">
+    <div class="search-bar">
+      <label for="searchInput" id="inputLabel">輸入粵拼或詞彙：</label>
+      <input id="searchInput" type="text" placeholder="英文、數字（例：Quali、7、ngoi3 hou3、ngoi hou、oi hou、oi3 hou3）" autocomplete="off" style="width:400px;"/>
+      <span class="search-mode" id="searchMode">
+        <label><input type="radio" name="matchMode" value="exact" checked id="modeExact">完全匹配</label>
+        <label><input type="radio" name="matchMode" value="fuzzy" id="modeFuzzy" title="查找時間可能會比較長">模糊匹配</label>
+      </span>
+      <button class="btn" id="searchBtn" onclick="searchDict()">查找</button>
+    </div>
+
+    <div class="result-block">
+      <div class="result-title">
+        <b id="result1Title">查找結果：</b>
+        <span class="button-group">
+          <button class="btn" onclick="dedupCopyToClipboard('result1')" id="copy1Btn">去重複製全部</button>
+          <button class="btn" onclick="clearResult('result1')" id="clear1Btn">清空</button>
+          <button class="btn" onclick="sortResult('result1',0)" id="sort1WordAsc">詞彙升序</button>
+          <button class="btn" onclick="sortResult('result1',0,true)" id="sort1WordDesc">詞彙降序</button>
+          <button class="btn" onclick="sortResult('result1',1)" id="sort1JyutpingAsc">粵拼升序</button>
+          <button class="btn" onclick="sortResult('result1',1,true)" id="sort1JyutpingDesc">粵拼降序</button>
+        </span>
+      </div>
+      <div class="result-hint" id="result1Hint"></div>
+      <div id="result1" class="result-table"></div>
+    </div>
+
+    <div class="result-block">
+      <div class="result-title">
+        <b id="result2Title">二次查找結果：</b>
+        <span class="button-group">
+          <button class="btn" onclick="dedupCopyToClipboard('result2')" id="copy2Btn">去重複製全部</button>
+          <button class="btn" onclick="clearResult('result2')" id="clear2Btn">清空</button>
+          <button class="btn" onclick="sortResult('result2',0)" id="sort2WordAsc">詞彙升序</button>
+          <button class="btn" onclick="sortResult('result2',0,true)" id="sort2WordDesc">詞彙降序</button>
+          <button class="btn" onclick="sortResult('result2',1)" id="sort2JyutpingAsc">粵拼升序</button>
+          <button class="btn" onclick="sortResult('result2',1,true)" id="sort2JyutpingDesc">粵拼降序</button>
+        </span>
+      </div>
+      <div class="result-hint" id="result2Hint"></div>
+      <div id="result2" class="result-table"></div>
+    </div>
+
+    <div class="result-block">
+      <div class="result-title">
+        <b id="result3Title">第三次查找結果：</b>
+        <span class="button-group">
+          <button class="btn" onclick="dedupCopyToClipboard('result3')" id="copy3Btn">去重複製全部</button>
+          <button class="btn" onclick="clearResult('result3')" id="clear3Btn">清空</button>
+          <button class="btn" onclick="sortResult('result3',0)" id="sort3WordAsc">詞彙升序</button>
+          <button class="btn" onclick="sortResult('result3',0,true)" id="sort3WordDesc">詞彙降序</button>
+          <button class="btn" onclick="sortResult('result3',1)" id="sort3JyutpingAsc">粵拼升序</button>
+          <button class="btn" onclick="sortResult('result3',1,true)" id="sort3JyutpingDesc">粵拼降序</button>
+        </span>
+      </div>
+      <div id="result3" class="result-table"></div>
+    </div>
+    <audio id="audioPlayer" style="display:none"></audio>
+  </div>
+  <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()">回到頂部</button>
+  <script>
+    // ==== 拼音变体与去声调辅助 ====
+    function removeTone(str) {
+      return (str||'').replace(/[1-6]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+    }
+    const finalsSwap = [
+      ['aa','a'],['aai','ai'],['aau','au'],['aam','am'],['aan','an'],
+      ['aang','ang'],['aap','ap'],['aat','at'],['aak','ak']
+    ];
+    function expandSyllableVariants(syllable) {
+      let forms = new Set();
+      forms.add(syllable);
+      if (/^[ln]/.test(syllable)) {
+        forms.add(syllable.replace(/^l/, 'n'));
+        forms.add(syllable.replace(/^n/, 'l'));
+      }
+      if (/^ng/.test(syllable)) {
+        forms.add(syllable.replace(/^ng/, ''));
+        forms.add(syllable.replace(/^ng/, 'm'));
+      } else {
+        forms.add('ng' + syllable);
+        if (/^m/.test(syllable)) forms.add(syllable.replace(/^m/, 'ng'));
+      }
+      finalsSwap.forEach(([a, b]) => {
+        let regA = new RegExp(a + '(?=([1-6])?$)');
+        let regB = new RegExp(b + '(?=([1-6])?$)');
+        Array.from(forms).forEach(f => {
+          if (regA.test(f)) forms.add(f.replace(regA, b));
+          if (regB.test(f)) forms.add(f.replace(regB, a));
+        });
+      });
+      Array.from(forms).forEach(f => {
+        forms.add(f.replace(/[1-6]$/, ''));
+      });
+      forms.delete('');
+      return Array.from(forms);
+    }
+    function expandJyutpingCombinations(jp) {
+      const parts = jp.split(/\s+/).filter(Boolean);
+      let all = [[]];
+      for (let i = 0; i < parts.length; i++) {
+        let variants = expandSyllableVariants(parts[i]);
+        let newAll = [];
+        all.forEach(arr => {
+          variants.forEach(v => newAll.push(arr.concat([v])));
+        });
+        all = newAll;
+      }
+      return all.map(arr => arr.join(' '));
+    }
+    function normalizeSpace(str) {
+      return str.replace(/\s+/g, ' ').trim();
+    }
+    // ==== 语言包 ====
+    const LANGS = {
+      'hk': {
+        title: "粵拼詞彙檢索工具",
+        headline: "粵拼詞彙檢索工具",
+        inputLabel: "輸入粵拼或詞彙：",
+        searchPlaceholder: "英文、數字（例：Quali、7、ngoi3 hou3、ngoi hou、oi hou、oi3 hou3）",
+        modeExact: "完全匹配",
+        modeFuzzy: "模糊匹配",
+        fuzzyTip: "查找時間可能會比較長",
+        searchBtn: "查找",
+        result1Title: "查找結果：",
+        result2Title: "二次查找結果：",
+        result3Title: "第三次查找結果：",
+        copyAll: "去重複製全部",
+        clear: "清空",
+        sortWordAsc: "詞彙升序",
+        sortWordDesc: "詞彙降序",
+        sortJyutpingAsc: "粵拼升序",
+        sortJyutpingDesc: "粵拼降序",
+        result1HintChar: "提示：點擊粵拼可以進行二次精確查找",
+        result1HintJyut: "提示：點擊詞彙可以進行二次精確查找",
+        result2HintChar: "提示：點擊詞彙可以進行第三次精確查找",
+        result2HintJyut: "提示：點擊粵拼可以進行第三次精確查找",
+        fuzzyResult1Hint: "提示：點擊詞匯和粵拼都可以進行二次精確查找",
+        fuzzyResult2Hint: "提示：點擊詞匯和粵拼都可以進行第三次精確查找",
+        noResult: "無結果",
+        delete: "刪除",
+        copy: "複製",
+        speak: "朗讀",
+        rowCopied: "已複製該行到剪貼簿",
+        allCopied: "已去重並複製到剪貼簿",
+        langSwitch: "简体",
+        clickToSearch: "撳下即耖",
+        serialNum: "序號",
+        word: "詞彙",
+        jyutping: "粵拼",
+        operate: "操作",
+        scrollTop: "回到頂部"
+      },
+      'cn': {
+        title: "粤拼词汇检索工具",
+        headline: "粤拼词汇检索工具",
+        inputLabel: "输入粤拼或词汇：",
+        searchPlaceholder: "英文、数字（例：Quali、7、ngoi3 hou3、ngoi hou、oi hou、oi3 hou3）",
+        modeExact: "完全匹配",
+        modeFuzzy: "模糊匹配",
+        fuzzyTip: "查找时间可能会比较长",
+        searchBtn: "查找",
+        result1Title: "查找结果：",
+        result2Title: "二次查找结果：",
+        result3Title: "第三次查找结果：",
+        copyAll: "去重复制全部",
+        clear: "清空",
+        sortWordAsc: "词汇升序",
+        sortWordDesc: "词汇降序",
+        sortJyutpingAsc: "粤拼升序",
+        sortJyutpingDesc: "粤拼降序",
+        result1HintChar: "提示：点击粤拼可以进行二次精确查找",
+        result1HintJyut: "提示：点击词汇可以进行二次精确查找",
+        result2HintChar: "提示：点击词汇可以进行第三次精确查找",
+        result2HintJyut: "提示：点击粤拼可以进行第三次精确查找",
+        fuzzyResult1Hint: "提示：点击词汇和粤拼都可以进行二次精确查找",
+        fuzzyResult2Hint: "提示：点击词汇和粤拼都可以进行第三次精确查找",
+        noResult: "无结果",
+        delete: "删除",
+        copy: "复制",
+        speak: "朗读",
+        rowCopied: "已复制该行到剪贴板",
+        allCopied: "已去重并复制到剪贴板",
+        langSwitch: "English",
+        clickToSearch: "撳下即耖",
+        serialNum: "序号",
+        word: "词汇",
+        jyutping: "粤拼",
+        operate: "操作",
+        scrollTop: "回到顶部"
+      },
+      'en': {
+        title: "Jyutping Lexicon Search Tool",
+        headline: "Jyutping Lexicon Search Tool",
+        inputLabel: "Enter Jyutping or Word:",
+        searchPlaceholder: "English, numbers, or Cantonese (e.g. Quali, 7, ngoi3 hou3, ngoi hou, oi hou, oi3 hou3)",
+        modeExact: "Exact Match",
+        modeFuzzy: "Fuzzy Match",
+        fuzzyTip: "Fuzzy search may take longer",
+        searchBtn: "Search",
+        result1Title: "Search Result:",
+        result2Title: "Second Search Result:",
+        result3Title: "Third Search Result:",
+        copyAll: "Copy All (Dedup)",
+        clear: "Clear",
+        sortWordAsc: "Word Ascending",
+        sortWordDesc: "Word Descending",
+        sortJyutpingAsc: "Jyutping Ascending",
+        sortJyutpingDesc: "Jyutping Descending",
+        result1HintChar: "Tip: Click Jyutping for second-level exact search",
+        result1HintJyut: "Tip: Click word for second-level exact search",
+        result2HintChar: "Tip: Click word for third-level exact search",
+        result2HintJyut: "Tip: Click Jyutping for third-level exact search",
+        fuzzyResult1Hint: "Tip: You can click both the word and Jyutping for second-level precise search",
+        fuzzyResult2Hint: "Tip: You can click both the word and Jyutping for third-level precise search",
+        noResult: "No Result",
+        delete: "Delete",
+        copy: "Copy",
+        speak: "Speak",
+        rowCopied: "Row copied to clipboard",
+        allCopied: "Deduped and copied to clipboard",
+        langSwitch: "繁體",
+        clickToSearch: "Click to search",
+        serialNum: "No.",
+        word: "Word",
+        jyutping: "Jyutping",
+        operate: "Actions", 
+        scrollTop: "To Top"
+      }
+    };
+    let currentLang = 'hk';
+    let dictArray = [];
+    let result3SelectedRow = null;
+    let lastSearchType = null;
+    let lastSearchMode = "exact";
+    let lastSource = "word";
+    let lastClickCol = null; // 0=詞彙, 1=粵拼
+
+    function applyLang() {
+      const lang = LANGS[currentLang];
+      document.title = lang.title;
+      document.getElementById('switchLangBtn').innerText = lang.langSwitch;
+      document.getElementById('headline').innerText = lang.headline;
+      document.getElementById('inputLabel').innerText = lang.inputLabel;
+      document.getElementById('searchInput').placeholder = lang.searchPlaceholder;
+      document.getElementById('modeExact').parentNode.lastChild.nodeValue = lang.modeExact;
+      document.getElementById('modeFuzzy').parentNode.lastChild.nodeValue = lang.modeFuzzy;
+      document.getElementById('modeFuzzy').title = lang.fuzzyTip;
+      document.getElementById('searchBtn').innerText = lang.searchBtn;
+      document.getElementById('result1Title').innerText = lang.result1Title;
+      document.getElementById('result2Title').innerText = lang.result2Title;
+      document.getElementById('result3Title').innerText = lang.result3Title;
+      document.getElementById('copy1Btn').innerText = lang.copyAll;
+      document.getElementById('clear1Btn').innerText = lang.clear;
+      document.getElementById('sort1WordAsc').innerText = lang.sortWordAsc;
+      document.getElementById('sort1WordDesc').innerText = lang.sortWordDesc;
+      document.getElementById('sort1JyutpingAsc').innerText = lang.sortJyutpingAsc;
+      document.getElementById('sort1JyutpingDesc').innerText = lang.sortJyutpingDesc;
+      document.getElementById('copy2Btn').innerText = lang.copyAll;
+      document.getElementById('clear2Btn').innerText = lang.clear;
+      document.getElementById('sort2WordAsc').innerText = lang.sortWordAsc;
+      document.getElementById('sort2WordDesc').innerText = lang.sortWordDesc;
+      document.getElementById('sort2JyutpingAsc').innerText = lang.sortJyutpingAsc;
+      document.getElementById('sort2JyutpingDesc').innerText = lang.sortJyutpingDesc;
+      document.getElementById('copy3Btn').innerText = lang.copyAll;
+      document.getElementById('clear3Btn').innerText = lang.clear;
+      document.getElementById('sort3WordAsc').innerText = lang.sortWordAsc;
+      document.getElementById('sort3WordDesc').innerText = lang.sortWordDesc;
+      document.getElementById('sort3JyutpingAsc').innerText = lang.sortJyutpingAsc;
+      document.getElementById('sort3JyutpingDesc').innerText = lang.sortJyutpingDesc;
+      document.getElementById('scrollTopBtn').innerText = lang.scrollTop;
+      let data1, data2, data3;
+      try { data1 = JSON.parse(document.getElementById('result1').dataset.rows || '[]'); } catch { data1 = []; }
+      try { data2 = JSON.parse(document.getElementById('result2').dataset.rows || '[]'); } catch { data2 = []; }
+      try { data3 = JSON.parse(document.getElementById('result3').dataset.rows || '[]'); } catch { data3 = []; }
+      showResult('result1', data1);
+      showResult('result2', data2);
+      showResult('result3', data3);
+    }
+    function switchLang() {
+      currentLang = currentLang === 'hk' ? 'cn' : (currentLang === 'cn' ? 'en' : 'hk');
+      applyLang();
+    }
+    // 词典加载，只取...之后且非#行
+    function loadDict() {
+      let text = window.jyutpingDictText || '';
+      let lines = text.split('\n');
+      let dataStart = 0;
+      for (let i = 0; i < lines.length; i++) {
+        const l = lines[i].trim();
+        if (l === '...' || l === '---') {
+          dataStart = i + 1;
+          break;
+        }
+      }
+      lines = lines.slice(dataStart);
+      dictArray = lines
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith('#'))
+        .map(line => {
+          let cols = line.split('\t');
+          let word = cols[0].trim();
+          let jyutping = (cols[1]||'').trim();
+          return [word, jyutping];
+        })
+        .filter(Boolean);
+    }
+
+    // 主查找函数
+    function searchDict() {
+      const lang = LANGS[currentLang];
+      const inputRaw = document.getElementById('searchInput').value;
+      const input = normalizeSpace(inputRaw);
+      const mode = document.querySelector('[name="matchMode"]:checked').value;
+      lastSearchMode = mode;
+      lastClickCol = null;
+      if (!input) {
+        showResult('result1', []);
+        showResult('result2', []);
+        showResult('result3', []);
+        document.getElementById('result1Hint').innerText = "";
+        document.getElementById('result2Hint').innerText = "";
+        return;
+      }
+      let result = [];
+      const isChinese = /[\u4e00-\u9fa5]/.test(input);
+      const isAllNumOrSpace = /^[\d\s]+$/.test(input);
+      if (mode === 'exact') {
+        let foundInWord = dictArray.some(row => row[0] === input);
+        let foundInJyut = dictArray.some(row => row[1] === input);
+        if (isChinese || isAllNumOrSpace || foundInWord) {
+          // 詞彙查找
+          result = dictArray.filter(row => row[0] === input);
+          lastSearchType = 'char';
+          lastSource = 'word';
+        } else if (foundInJyut) {
+          // 粵拼查找
+          result = dictArray.filter(row => row[1] === input);
+          lastSearchType = 'jyut';
+          lastSource = 'jyutping';
+        } else {
+          // 兩列都查全等
+          result = dictArray.filter(row => row[0] === input || row[1] === input);
+          lastSearchType = 'both';
+          lastSource = 'both';
+        }
+        lastClickCol = null; // 初始查找未點擊過任何列
+      } else if (mode === 'fuzzy') {
+        let res = [];
+        if (isChinese) {
+          let cleanedInput = input.replace(/\s+/g, '');
+          res = dictArray.filter(row => row[0].replace(/\s+/g, '').includes(cleanedInput));
+          lastSearchType = 'char';
+          lastSource = 'word';
+        } else if (isAllNumOrSpace) {
+          let cleanedInput = input.replace(/\s+/g, '');
+          res = dictArray.filter(row => row[0].replace(/\s+/g, '').includes(cleanedInput));
+          lastSearchType = 'char';
+          lastSource = 'word';
+        } else {
+          // 拼音和英文模糊查：全部去声调
+          let matchStrings = expandJyutpingCombinations(input).map(removeTone);
+          let inputNoTone = removeTone(input);
+          if (!matchStrings.includes(inputNoTone)) matchStrings.push(inputNoTone);
+          dictArray.forEach(row => {
+            let wordCol = row[0].toLowerCase();
+            let jyutColNoTone = removeTone(row[1]);
+            for (let str of matchStrings) {
+              if (wordCol.includes(str) || jyutColNoTone.includes(str)) {
+                res.push(row);
+                break;
+              }
+            }
+          });
+          lastSearchType = 'both';
+          lastSource = 'both';
+        }
+        lastClickCol = null;
+        result = res;
+      }
+      showResult('result1', result);
+      showResult('result2', []);
+      showResult('result3', []);
+      // 提示邏輯將移至 showResult 內
+    }
+
+    // 查找结果表格渲染/操作
+    function showResult(targetId, data) {
+      const lang = LANGS[currentLang];
+      const container = document.getElementById(targetId);
+      let areaType = (targetId === 'result1') ? 1 : (targetId === 'result2' ? 2 : 3);
+      if (!data || !data.length) {
+        container.innerHTML = `<em>${lang.noResult}</em>`;
+        container.dataset.rows = "[]";
+        if (areaType === 3) result3SelectedRow = null;
+        if(areaType === 1) document.getElementById('result1Hint').innerText = "";
+        if(areaType === 2) document.getElementById('result2Hint').innerText = "";
+        return;
+      }
+      let html = `<table class="result-table"><thead><tr>
+        <th>${lang.serialNum}</th>
+        <th onclick="sortResult('${targetId}',0)">${lang.word}</th>
+        <th onclick="sortResult('${targetId}',1)">${lang.jyutping}</th>
+        <th>${lang.operate}</th>
+      </tr></thead><tbody>`;
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        let rowClass = '';
+        if (areaType === 3 && result3SelectedRow === i) rowClass = 'row-selected';
+        html += `<tr${rowClass ? ` class="${rowClass}"` : ''}>`;
+        html += `<td style="width: 30px;">${i + 1}</td>`;
+
+        let enableCol0 = false, enableCol1 = false;
+        let hintText = lang.clickToSearch;
+        // 完全匹配模式下的點擊查找邏輯
+        if (areaType <= 2) {
+          if (lastSearchMode === "exact") {
+            // 首次查找
+            if ((areaType === 1 && lastClickCol == null)) {
+              if (lastSearchType === "char") {
+                enableCol1 = true; // 词汇查找时粵拼可点
+              } else if (lastSearchType === "jyut") {
+                enableCol0 = true; // 粵拼查找时词汇可点
+              }
+            }
+            // 二次查找
+            else if ((areaType === 2 && lastClickCol != null)) {
+              if (lastClickCol === 0) {
+                enableCol1 = true; // 上次点了词汇，这次粵拼可点
+              } else if (lastClickCol === 1) {
+                enableCol0 = true; // 上次点了粵拼，这次词汇可点
+              }
+            }
+          } else {
+            enableCol0 = enableCol1 = true; // 模糊查找都可点
+          }
+        }
+        if (areaType <= 2) {
+          html += `<td style="user-select:text;${enableCol0 ? 'cursor:pointer;' : ''}" ${enableCol0 ? `class="highlight-link hover-highlight"` : ""} ${enableCol0 ? `onclick="nextSearch(${areaType},${i},0)" title="${hintText}"` : ""}>${row[0]}</td>`;
+          html += `<td style="user-select:text;${enableCol1 ? 'cursor:pointer;' : ''}" ${enableCol1 ? `class="highlight-link hover-highlight"` : ""} ${enableCol1 ? `onclick="nextSearch(${areaType},${i},1)" title="${hintText}"` : ""}>${row[1]}</td>`;
+        } else {
+          html += `<td class="copyable" ondblclick="highlightResult3Row(${i});">${row[0]}</td>`;
+          html += `<td class="copyable" ondblclick="highlightResult3Row(${i});">${row[1]}</td>`;
+        }
+
+        html += `<td style="width: 180px;">
+            <button class="del-btn" onclick="deleteRow('${targetId}',${i});event.stopPropagation();">${lang.delete}</button>
+            <button class="copy-btn" onclick="copyRow('${targetId}',${i});event.stopPropagation();">${lang.copy}</button>
+            <button class="speak-btn" onclick="playAudio('${row[1]}');event.stopPropagation();">${lang.speak}</button>
+          </td>`;
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      container.innerHTML = html;
+      container.dataset.rows = JSON.stringify(data);
+
+      // ======= 提示顯示部分 ======
+      if (areaType === 1) {
+        if (lastSearchMode === "fuzzy") {
+          document.getElementById('result1Hint').innerText = lang.fuzzyResult1Hint;
+          document.getElementById('result2Hint').innerText = "";
+        } else {
+          document.getElementById('result1Hint').innerText = lastSearchType === "jyut"
+            ? LANGS[currentLang].result1HintJyut
+            : LANGS[currentLang].result1HintChar;
+          document.getElementById('result2Hint').innerText = "";
+        }
+      }
+      if (areaType === 2) {
+        if (lastSearchMode === "fuzzy") {
+          document.getElementById('result2Hint').innerText = lang.fuzzyResult2Hint;
+        } else {
+          document.getElementById('result2Hint').innerText = lastClickCol === 0
+            ? lang.result2HintJyut
+            : lang.result2HintChar;
+        }
+      }
+    }
+
+    function nextSearch(area, idx, col) {
+      // area: 1 or 2, idx: 行，col: 0=詞彙 1=粵拼
+      let srcId = area === 1 ? 'result1' : 'result2';
+      let tgtId = area === 1 ? 'result2' : 'result3';
+      let src, tgt;
+      try { src = JSON.parse(document.getElementById(srcId).dataset.rows || '[]'); } catch { src = []; }
+      try { tgt = JSON.parse(document.getElementById(tgtId).dataset.rows || '[]'); } catch { tgt = []; }
+      if (!src[idx]) return;
+      let value = normalizeSpace(src[idx][col]);
+      let addRows = dictArray.filter(row => normalizeSpace(row[col]) === value);
+      let old = tgt.slice();
+      for (let r of addRows) {
+        if (!old.some(x => x[0] === r[0] && x[1] === r[1])) old.push(r);
+      }
+      lastClickCol = col;
+      showResult(tgtId, old);
+    }
+    function highlightResult3Row(idx) {
+      result3SelectedRow = idx;
+      let data;
+      try { data = JSON.parse(document.getElementById('result3').dataset.rows || '[]'); } catch { data = []; }
+      showResult('result3', data);
+    }
+    function sortResult(targetId, col, desc = false) {
+      let data;
+      try { data = JSON.parse(document.getElementById(targetId).dataset.rows || '[]'); } catch { data = []; }
+      if (!data.length) return;
+      data.sort((a, b) => {
+        if (a[col] === b[col]) return 0;
+        if ((a[col] > b[col]) ^ desc) return 1; else return -1;
+      });
+      showResult(targetId, data);
+    }
+    function dedupCopyToClipboard(targetId) {
+      const lang = LANGS[currentLang];
+      let data;
+      try { data = JSON.parse(document.getElementById(targetId).dataset.rows || '[]'); } catch { data = []; }
+      if (!data.length) return;
+      const seen = new Set();
+      const dedup = [];
+      for (const r of data) {
+        const key = r[0] + '\t' + r[1];
+        if (!seen.has(key)) {
+          seen.add(key);
+          dedup.push(r);
+        }
+      }
+      const txt = dedup.map(r => r.join('\t')).join('\n');
+      navigator.clipboard.writeText(txt).then(() => { alert(lang.allCopied); });
+    }
+    function clearResult(targetId) {
+      showResult(targetId, []);
+    }
+    function deleteRow(targetId, idx) {
+      let data;
+      try { data = JSON.parse(document.getElementById(targetId).dataset.rows || '[]'); } catch { data = []; }
+      if (idx < 0 || idx >= data.length) return;
+      data.splice(idx, 1);
+      if (targetId === 'result3') {
+        if (result3SelectedRow === idx) result3SelectedRow = null;
+        else if (result3SelectedRow > idx) result3SelectedRow--;
+      }
+      showResult(targetId, data);
+    }
+    function copyRow(targetId, idx) {
+      const lang = LANGS[currentLang];
+      let data;
+      try { data = JSON.parse(document.getElementById(targetId).dataset.rows || '[]'); } catch { data = []; }
+      if (idx < 0 || idx >= data.length) return;
+      const txt = data[idx].join('\t');
+      navigator.clipboard.writeText(txt).then(() => { alert(lang.rowCopied); });
+    }
+    function playAudio(jyutping) {
+      jyutping = (jyutping || '').trim();
+      if (!jyutping) return;
+      let syllables = jyutping.split(/[\s,，、\t]+/).filter(Boolean);
+      if (syllables.length === 0) return;
+      let idx = 0;
+      let audioPlayer = document.getElementById('audioPlayer');
+      function playNext() {
+        if (idx >= syllables.length) return;
+        let filename = syllables[idx].toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (!filename) {
+          idx++; playNext(); return;
+        }
+        let audioPath = `Audio/${filename}.mp3`;
+        audioPlayer.src = audioPath;
+        audioPlayer.currentTime = 0;
+        audioPlayer.play().then(()=>{}).catch(()=>{});
+        audioPlayer.onended = function () {
+          idx++;
+          playNext();
+        };
+        audioPlayer.onerror = function () {
+          idx++;
+          playNext();
+        };
+      }
+      idx = 0;
+      playNext();
+    }
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    document.getElementById('searchInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') searchDict();
+    });
+    window.addEventListener('DOMContentLoaded', function() {
+      loadDict();
+      applyLang();
+    });
+  </script>
+</body>
+</html>
