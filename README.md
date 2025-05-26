@@ -15,6 +15,7 @@ window.jyutpingDictText = `
 <script>
 window.jyutpingDictText = `
 廣東話	gwong2 dung1 waa2
+67	luk1 cat6
 有	jau5	11175341
 愛好	oi3 hou3
 愛好	ngoi3 hou3
