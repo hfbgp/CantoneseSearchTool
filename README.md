@@ -2,15 +2,14 @@
 Summary of reading and writing | 總結粵語讀法和寫法 | 总结粤语读法和写法
 
 記事簿打開.html文件
-在兩“`”之間填入詞典
-<script>
+在兩“`”之間填入詞典<br><script>
 window.jyutpingDictText = `
 
 填入詞典，詞匯和粵拼之間用製表符隔開
 
 `;
 </script>
-
+<br>
 例如：
 <script><br>
 window.jyutpingDictText = `<br>
