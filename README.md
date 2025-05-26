@@ -12,7 +12,7 @@ window.jyutpingDictText = `
 </script>
 <br>
 <br>
-例如：
+例如：<br>
 <script><br>
 window.jyutpingDictText = `<br>
 廣東話	gwong2 dung1 waa2<br>
