@@ -21,7 +21,7 @@
     .btn:hover { background: #e4e4e4; }
     .highlight { background: #ffe082 !important; cursor: pointer; }
     .search-mode {
-    display: flex;
+      display: flex;
       gap: 12px;
       flex-wrap: wrap;
       align-items: center;
@@ -70,64 +70,72 @@
       z-index: 100;
     }
     @media (max-width: 600px) {
-   .search-mode { gap: 8px; }
-   .search-mode label { font-size: 15px; gap: 4px; width: auto; }
-    body {
-      margin: 8px;
-      font-size: 15px;
-     }
-  .container {
-      padding: 0 2px;
-      gap: 14px;
-      max-width: 100%;
+      .search-mode { gap: 8px; }
+      .search-mode label { font-size: 15px; gap: 4px; width: auto; }
+      body {
+        margin: 8px;
+        font-size: 15px;
+      }
+      .container {
+        padding: 0 2px;
+        gap: 14px;
+        max-width: 100%;
+      }
+      .search-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .search-bar label, .search-bar input, .search-bar .search-mode, .search-bar button {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+      }
+      .search-bar input[type="text"] {
+        width: 100% !important;
+      }
+      .button-group {
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .result-block {
+        padding: 8px;
+      }
+      .result-table th, .result-table td {
+        padding: 4px 6px;
+        font-size: 14px;
+        word-break: break-all;
+      }
+      .lang-switch {
+        top: 8px;
+        right: 8px;
+      }
+      .scroll-top-btn {
+        right: 10px;
+        bottom: 10px;
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+      h1 {
+        font-size: 1.2em;
+      }
     }
-  .search-bar {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
-    }
-  .search-bar label, .search-bar input, .search-bar .search-mode, .search-bar button {
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-    }
-  .search-bar input[type="text"] {
-      width: 100% !important;
-    }
-  .button-group {
-      flex-wrap: wrap;
+    .search-mode label {
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
       gap: 4px;
+      margin: 0;
+      width: auto;
     }
-  .result-block {
-      padding: 8px;
+    /* 新增：複選框列寬度控制 */
+    .result-table th:first-child, .result-table td:first-child {
+      width: 3%;
     }
-  .result-table th, .result-table td {
-      padding: 4px 6px;
-      font-size: 14px;
-      word-break: break-all;
+    /* 新增：操作列寬度控制 */
+    .result-table th:last-child, .result-table td:last-child {
+      width: 21%;
     }
-  .lang-switch {
-      top: 8px;
-      right: 8px;
-    }
-  .scroll-top-btn {
-      right: 10px;
-      bottom: 10px;
-      padding: 8px 12px;
-      font-size: 14px;
-    }
-    h1 {
-      font-size: 1.2em;
-    }
-  }
-  .search-mode label {
-    display: inline-flex;
-    align-items: center;
-    white-space: nowrap;
-    gap: 4px;
-    margin: 0;
-    width: auto;
-  }
   </style>
 <script>
 window.jyutpingDictText = `
@@ -167,8 +175,17 @@ Call loan	ko1 lou1
       <div class="result-title">
         <b id="result1Title">查找結果：</b>
         <span class="button-group">
-          <button class="btn" onclick="dedupCopyToClipboard('result1')" id="copy1Btn">去重複製全部</button>
+          <!-- 删除去重複製全部按钮 -->
+          <!-- 新增去重按钮 -->
+          <button class="btn" onclick="dedupResult('result1')" id="dedup1Btn">去重</button>
           <button class="btn" onclick="clearResult('result1')" id="clear1Btn">清空</button>
+          <!-- 修改多選複製为複製 -->
+          <button class="btn" onclick="multiCopy('result1')" id="copy1Btn">複製</button>
+          <!-- 修改多選刪除为刪除 -->
+          <button class="btn" onclick="multiDelete('result1')" id="delete1Btn">刪除</button>
+          <!-- 新增反选按钮 -->
+          <button class="btn" onclick="invertSelection('result1')" id="invertSelection1Btn">反選</button>
+          <button class="btn" onclick="cancelSelection('result1')" id="cancelSelection1Btn">取消選擇</button>
           <button class="btn" onclick="sortResult('result1',0)" id="sort1WordAsc">詞彙升序</button>
           <button class="btn" onclick="sortResult('result1',0,true)" id="sort1WordDesc">詞彙降序</button>
           <button class="btn" onclick="sortResult('result1',1)" id="sort1JyutpingAsc">粵拼升序</button>
@@ -183,8 +200,17 @@ Call loan	ko1 lou1
       <div class="result-title">
         <b id="result2Title">二次查找結果：</b>
         <span class="button-group">
-          <button class="btn" onclick="dedupCopyToClipboard('result2')" id="copy2Btn">去重複製全部</button>
+          <!-- 删除去重複製全部按钮 -->
+          <!-- 新增去重按钮 -->
+          <button class="btn" onclick="dedupResult('result2')" id="dedup2Btn">去重</button>
           <button class="btn" onclick="clearResult('result2')" id="clear2Btn">清空</button>
+          <!-- 修改多選複製为複製 -->
+          <button class="btn" onclick="multiCopy('result2')" id="copy2Btn">複製</button>
+          <!-- 修改多選刪除为刪除 -->
+          <button class="btn" onclick="multiDelete('result2')" id="delete2Btn">刪除</button>
+          <!-- 新增反选按钮 -->
+          <button class="btn" onclick="invertSelection('result2')" id="invertSelection2Btn">反選</button>
+          <button class="btn" onclick="cancelSelection('result2')" id="cancelSelection2Btn">取消選擇</button>
           <button class="btn" onclick="sortResult('result2',0)" id="sort2WordAsc">詞彙升序</button>
           <button class="btn" onclick="sortResult('result2',0,true)" id="sort2WordDesc">詞彙降序</button>
           <button class="btn" onclick="sortResult('result2',1)" id="sort2JyutpingAsc">粵拼升序</button>
@@ -199,8 +225,17 @@ Call loan	ko1 lou1
       <div class="result-title">
         <b id="result3Title">第三次查找結果：</b>
         <span class="button-group">
-          <button class="btn" onclick="dedupCopyToClipboard('result3')" id="copy3Btn">去重複製全部</button>
+          <!-- 删除去重複製全部按钮 -->
+          <!-- 新增去重按钮 -->
+          <button class="btn" onclick="dedupResult('result3')" id="dedup3Btn">去重</button>
           <button class="btn" onclick="clearResult('result3')" id="clear3Btn">清空</button>
+          <!-- 修改多選複製为複製 -->
+          <button class="btn" onclick="multiCopy('result3')" id="copy3Btn">複製</button>
+          <!-- 修改多選刪除为刪除 -->
+          <button class="btn" onclick="multiDelete('result3')" id="delete3Btn">刪除</button>
+          <!-- 新增反选按钮 -->
+          <button class="btn" onclick="invertSelection('result3')" id="invertSelection3Btn">反選</button>
+          <button class="btn" onclick="cancelSelection('result3')" id="cancelSelection3Btn">取消選擇</button>
           <button class="btn" onclick="sortResult('result3',0)" id="sort3WordAsc">詞彙升序</button>
           <button class="btn" onclick="sortResult('result3',0,true)" id="sort3WordDesc">詞彙降序</button>
           <button class="btn" onclick="sortResult('result3',1)" id="sort3JyutpingAsc">粵拼升序</button>
@@ -213,59 +248,73 @@ Call loan	ko1 lou1
   </div>
   <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()">回到頂部</button>
   <script>
-    // ==== 拼音变体与去声调辅助 ====
-    function removeTone(str) {
-      return (str||'').replace(/[1-6]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
-    }
-    const finalsSwap = [
-      ['aa','a'],['aai','ai'],['aau','au'],['aam','am'],['aan','an'],
-      ['aang','ang'],['aap','ap'],['aat','at'],['aak','ak']
-    ];
-    function expandSyllableVariants(syllable) {
-      let forms = new Set();
-      forms.add(syllable);
-      if (/^[ln]/.test(syllable)) {
-        forms.add(syllable.replace(/^l/, 'n'));
-        forms.add(syllable.replace(/^n/, 'l'));
-      }
-      if (/^ng/.test(syllable)) {
-        forms.add(syllable.replace(/^ng/, ''));
-        forms.add(syllable.replace(/^ng/, 'm'));
-      } else {
-        forms.add('ng' + syllable);
-        if (/^m/.test(syllable)) forms.add(syllable.replace(/^m/, 'ng'));
-      }
-      finalsSwap.forEach(([a, b]) => {
-        let regA = new RegExp(a + '(?=([1-6])?$)');
-        let regB = new RegExp(b + '(?=([1-6])?$)');
-        Array.from(forms).forEach(f => {
-          if (regA.test(f)) forms.add(f.replace(regA, b));
-          if (regB.test(f)) forms.add(f.replace(regB, a));
-        });
-      });
-      Array.from(forms).forEach(f => {
-        forms.add(f.replace(/[1-6]$/, ''));
-      });
-      forms.delete('');
-      return Array.from(forms);
-    }
-    function expandJyutpingCombinations(jp) {
-      const parts = jp.split(/\s+/).filter(Boolean);
-      let all = [[]];
-      for (let i = 0; i < parts.length; i++) {
-        let variants = expandSyllableVariants(parts[i]);
-        let newAll = [];
-        all.forEach(arr => {
-          variants.forEach(v => newAll.push(arr.concat([v])));
-        });
-        all = newAll;
-      }
-      return all.map(arr => arr.join(' '));
-    }
-    function normalizeSpace(str) {
-      return str.replace(/\s+/g, ' ').trim();
-    }
-    // ==== 语言包 ====
+    // ==== 拼音變體與去聲調輔助 ====
+function removeTone(str) {
+  return (str||'').replace(/[1-6]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+const finalsSwap = [
+  ['aa','a'],['aai','ai'],['aau','au'],['aam','am'],['aan','an'],
+  ['aang','ang'],['aap','ap'],['aat','at'],['aak','ak'],
+  ['ip', 'ep'], ['i', 'ei'], ['ing', 'eng'], ['ik', 'ek'], 
+  ['iu', 'eu'], ['oe', 'eo'], ['eoi', 'oei'], ['eon', 'oen'], 
+  ['eot', 'oet'], ['oeng', 'eong'], ['oek', 'eok']
+];
+function expandSyllableVariants(syllable) {
+  let forms = new Set();
+  forms.add(syllable);
+  if (/^[ln]/.test(syllable)) {
+    forms.add(syllable.replace(/^l/, 'n'));
+    forms.add(syllable.replace(/^n/, 'l'));
+  }
+  if (/^ng/.test(syllable)) {
+    forms.add(syllable.replace(/^ng/, ''));
+    forms.add(syllable.replace(/^ng/, 'm'));
+  } else {
+    forms.add('ng' + syllable);
+    if (/^m/.test(syllable)) forms.add(syllable.replace(/^m/, 'ng'));
+  }
+  // 增加聲母 b 和 p、g 和 k、gw 和 kw、z 和 c 的處理
+  const initialSwaps = [['b', 'p'], ['g', 'k'], ['gw', 'kw'], ['z', 'c']];
+  initialSwaps.forEach(([a, b]) => {
+    let regA = new RegExp(`^${a}`);
+    let regB = new RegExp(`^${b}`);
+    Array.from(forms).forEach(f => {
+      if (regA.test(f)) forms.add(f.replace(regA, b));
+      if (regB.test(f)) forms.add(f.replace(regB, a));
+    });
+  });
+
+  finalsSwap.forEach(([a, b]) => {
+    let regA = new RegExp(a + '(?=([1-6])?$)');
+    let regB = new RegExp(b + '(?=([1-6])?$)');
+    Array.from(forms).forEach(f => {
+      if (regA.test(f)) forms.add(f.replace(regA, b));
+      if (regB.test(f)) forms.add(f.replace(regB, a));
+    });
+  });
+  Array.from(forms).forEach(f => {
+    forms.add(f.replace(/[1-6]$/, ''));
+  });
+  forms.delete('');
+  return Array.from(forms);
+}
+function expandJyutpingCombinations(jp) {
+  const parts = jp.split(/\s+/).filter(Boolean);
+  let all = [[]];
+  for (let i = 0; i < parts.length; i++) {
+    let variants = expandSyllableVariants(parts[i]);
+    let newAll = [];
+    all.forEach(arr => {
+      variants.forEach(v => newAll.push(arr.concat([v])));
+    });
+    all = newAll;
+  }
+  return all.map(arr => arr.join(' '));
+}
+function normalizeSpace(str) {
+  return str.replace(/\s+/g, ' ').trim();
+}
+    // ==== 語言包 ====
     const LANGS = {
       'hk': {
         title: "粵拼詞彙檢索工具",
@@ -279,8 +328,12 @@ Call loan	ko1 lou1
         result1Title: "查找結果：",
         result2Title: "二次查找結果：",
         result3Title: "第三次查找結果：",
+        // 修改按鈕名稱
         copyAll: "去重複製全部",
         clear: "清空",
+        multiCopy: "複製",
+        multiDelete: "刪除",
+        cancelSelection: "取消選擇",
         sortWordAsc: "詞彙升序",
         sortWordDesc: "詞彙降序",
         sortJyutpingAsc: "粵拼升序",
@@ -303,7 +356,13 @@ Call loan	ko1 lou1
         word: "詞彙",
         jyutping: "粵拼",
         operate: "操作",
-        scrollTop: "回到頂部"
+        scrollTop: "回到頂部",
+        totalCount: "共",
+        selectedCount: "，已選中",
+        countUnit: "個",
+        // 新增按鈕名稱
+        dedup: "去重",
+        invertSelection: "反選"
       },
       'cn': {
         title: "粤拼词汇检索工具",
@@ -317,8 +376,12 @@ Call loan	ko1 lou1
         result1Title: "查找结果：",
         result2Title: "二次查找结果：",
         result3Title: "第三次查找结果：",
+        // 修改按鈕名稱
         copyAll: "去重复制全部",
         clear: "清空",
+        multiCopy: "复制",
+        multiDelete: "删除",
+        cancelSelection: "取消选择",
         sortWordAsc: "词汇升序",
         sortWordDesc: "词汇降序",
         sortJyutpingAsc: "粤拼升序",
@@ -336,12 +399,18 @@ Call loan	ko1 lou1
         rowCopied: "已复制该行到剪贴板",
         allCopied: "已去重并复制到剪贴板",
         langSwitch: "English",
-        clickToSearch: "撳下即耖",
+        clickToSearch: "点击查找",
         serialNum: "序号",
         word: "词汇",
         jyutping: "粤拼",
         operate: "操作",
-        scrollTop: "回到顶部"
+        scrollTop: "回到顶部",
+        totalCount: "共",
+        selectedCount: "，已选中",
+        countUnit: "个",
+        // 新增按鈕名稱
+        dedup: "去重",
+        invertSelection: "反选"
       },
       'en': {
         title: "Jyutping Lexicon Search Tool",
@@ -355,8 +424,12 @@ Call loan	ko1 lou1
         result1Title: "Search Result:",
         result2Title: "Second Search Result:",
         result3Title: "Third Search Result:",
+        // 修改按鈕名稱
         copyAll: "Copy All (Dedup)",
         clear: "Clear",
+        multiCopy: "Copy",
+        multiDelete: "Delete",
+        cancelSelection: "Cancel Selection",
         sortWordAsc: "Word Ascending",
         sortWordDesc: "Word Descending",
         sortJyutpingAsc: "Jyutping Ascending",
@@ -374,12 +447,18 @@ Call loan	ko1 lou1
         rowCopied: "Row copied to clipboard",
         allCopied: "Deduped and copied to clipboard",
         langSwitch: "繁體",
-        clickToSearch: "Click to search",
+        clickToSearch: "Click and search",
         serialNum: "No.",
         word: "Word",
         jyutping: "Jyutping",
         operate: "Actions", 
-        scrollTop: "To Top"
+        scrollTop: "To Top",
+        totalCount: "Total: ",
+        selectedCount: ", Selected: ",
+        countUnit: "",
+        // 新增按鈕名稱
+        dedup: "Deduplicate",
+        invertSelection: "Invert Selection"
       }
     };
     let currentLang = 'hk';
@@ -404,24 +483,38 @@ Call loan	ko1 lou1
       document.getElementById('result1Title').innerText = lang.result1Title;
       document.getElementById('result2Title').innerText = lang.result2Title;
       document.getElementById('result3Title').innerText = lang.result3Title;
-      document.getElementById('copy1Btn').innerText = lang.copyAll;
+      // 修改按鈕名稱
       document.getElementById('clear1Btn').innerText = lang.clear;
+      document.getElementById('copy1Btn').innerText = lang.multiCopy;
+      document.getElementById('delete1Btn').innerText = lang.multiDelete;
+      document.getElementById('cancelSelection1Btn').innerText = lang.cancelSelection;
       document.getElementById('sort1WordAsc').innerText = lang.sortWordAsc;
       document.getElementById('sort1WordDesc').innerText = lang.sortWordDesc;
       document.getElementById('sort1JyutpingAsc').innerText = lang.sortJyutpingAsc;
       document.getElementById('sort1JyutpingDesc').innerText = lang.sortJyutpingDesc;
-      document.getElementById('copy2Btn').innerText = lang.copyAll;
       document.getElementById('clear2Btn').innerText = lang.clear;
+      document.getElementById('copy2Btn').innerText = lang.multiCopy;
+      document.getElementById('delete2Btn').innerText = lang.multiDelete;
+      document.getElementById('cancelSelection2Btn').innerText = lang.cancelSelection;
       document.getElementById('sort2WordAsc').innerText = lang.sortWordAsc;
       document.getElementById('sort2WordDesc').innerText = lang.sortWordDesc;
       document.getElementById('sort2JyutpingAsc').innerText = lang.sortJyutpingAsc;
       document.getElementById('sort2JyutpingDesc').innerText = lang.sortJyutpingDesc;
-      document.getElementById('copy3Btn').innerText = lang.copyAll;
       document.getElementById('clear3Btn').innerText = lang.clear;
+      document.getElementById('copy3Btn').innerText = lang.multiCopy;
+      document.getElementById('delete3Btn').innerText = lang.multiDelete;
+      document.getElementById('cancelSelection3Btn').innerText = lang.cancelSelection;
       document.getElementById('sort3WordAsc').innerText = lang.sortWordAsc;
       document.getElementById('sort3WordDesc').innerText = lang.sortWordDesc;
       document.getElementById('sort3JyutpingAsc').innerText = lang.sortJyutpingAsc;
       document.getElementById('sort3JyutpingDesc').innerText = lang.sortJyutpingDesc;
+      // 新增按鈕名稱
+      document.getElementById('dedup1Btn').innerText = lang.dedup;
+      document.getElementById('dedup2Btn').innerText = lang.dedup;
+      document.getElementById('dedup3Btn').innerText = lang.dedup;
+      document.getElementById('invertSelection1Btn').innerText = lang.invertSelection;
+      document.getElementById('invertSelection2Btn').innerText = lang.invertSelection;
+      document.getElementById('invertSelection3Btn').innerText = lang.invertSelection;
       document.getElementById('scrollTopBtn').innerText = lang.scrollTop;
       let data1, data2, data3;
       try { data1 = JSON.parse(document.getElementById('result1').dataset.rows || '[]'); } catch { data1 = []; }
@@ -435,7 +528,7 @@ Call loan	ko1 lou1
       currentLang = currentLang === 'hk' ? 'cn' : (currentLang === 'cn' ? 'en' : 'hk');
       applyLang();
     }
-    // 词典加载，只取...之后且非#行
+    // 詞典加載，只取...之後且非#行
     function loadDict() {
       let text = window.jyutpingDictText || '';
       let lines = text.split('\n');
@@ -460,7 +553,7 @@ Call loan	ko1 lou1
         .filter(Boolean);
     }
 
-    // 主查找函数
+    // 主查找函數
     function searchDict() {
       const lang = LANGS[currentLang];
       const inputRaw = document.getElementById('searchInput').value;
@@ -512,7 +605,7 @@ Call loan	ko1 lou1
           lastSearchType = 'char';
           lastSource = 'word';
         } else {
-          // 拼音和英文模糊查：全部去声调
+          // 拼音和英文模糊查：全部去聲調
           let matchStrings = expandJyutpingCombinations(input).map(removeTone);
           let inputNoTone = removeTone(input);
           if (!matchStrings.includes(inputNoTone)) matchStrings.push(inputNoTone);
@@ -531,6 +624,12 @@ Call loan	ko1 lou1
         }
         lastClickCol = null;
         result = res;
+        // 模糊匹配模式下排序
+        result = result.sort((a, b) => {
+          const scoreA = getSimilarityScore(a, input);
+          const scoreB = getSimilarityScore(b, input);
+          return scoreB - scoreA;
+        });
       }
       showResult('result1', result);
       showResult('result2', []);
@@ -538,97 +637,153 @@ Call loan	ko1 lou1
       // 提示邏輯將移至 showResult 內
     }
 
-    // 查找结果表格渲染/操作
-    function showResult(targetId, data) {
-      const lang = LANGS[currentLang];
-      const container = document.getElementById(targetId);
-      let areaType = (targetId === 'result1') ? 1 : (targetId === 'result2' ? 2 : 3);
-      if (!data || !data.length) {
-        container.innerHTML = `<em>${lang.noResult}</em>`;
-        container.dataset.rows = "[]";
-        if (areaType === 3) result3SelectedRow = null;
-        if(areaType === 1) document.getElementById('result1Hint').innerText = "";
-        if(areaType === 2) document.getElementById('result2Hint').innerText = "";
-        return;
-      }
-      let html = `<table class="result-table"><thead><tr>
-        <th>${lang.serialNum}</th>
-        <th onclick="sortResult('${targetId}',0)">${lang.word}</th>
-        <th onclick="sortResult('${targetId}',1)">${lang.jyutping}</th>
-        <th>${lang.operate}</th>
-      </tr></thead><tbody>`;
-      for (let i = 0; i < data.length; i++) {
-        const row = data[i];
-        let rowClass = '';
-        if (areaType === 3 && result3SelectedRow === i) rowClass = 'row-selected';
-        html += `<tr${rowClass ? ` class="${rowClass}"` : ''}>`;
-        html += `<td style="width: 30px;">${i + 1}</td>`;
+    // 計算相似度評分
+    function getSimilarityScore(row, input) {
+      const word = row[0].toLowerCase();
+      const jyutping = removeTone(row[1]);
+      const inputNoTone = removeTone(input);
+      const matchStrings = expandJyutpingCombinations(input).map(removeTone);
+      if (!matchStrings.includes(inputNoTone)) matchStrings.push(inputNoTone);
 
-        let enableCol0 = false, enableCol1 = false;
-        let hintText = lang.clickToSearch;
-        // 完全匹配模式下的點擊查找邏輯
-        if (areaType <= 2) {
-          if (lastSearchMode === "exact") {
-            // 首次查找
-            if ((areaType === 1 && lastClickCol == null)) {
-              if (lastSearchType === "char") {
-                enableCol1 = true; // 词汇查找时粵拼可点
-              } else if (lastSearchType === "jyut") {
-                enableCol0 = true; // 粵拼查找时词汇可点
-              }
-            }
-            // 二次查找
-            else if ((areaType === 2 && lastClickCol != null)) {
-              if (lastClickCol === 0) {
-                enableCol1 = true; // 上次点了词汇，这次粵拼可点
-              } else if (lastClickCol === 1) {
-                enableCol0 = true; // 上次点了粵拼，这次词汇可点
-              }
-            }
-          } else {
-            enableCol0 = enableCol1 = true; // 模糊查找都可点
+      let score = 0;
+      matchStrings.forEach(str => {
+        if (word === str || jyutping === str) {
+          score += 3;
+        } else if (word.includes(str) || jyutping.includes(str)) {
+          score += 1;
+        }
+      });
+      return score;
+    }
+
+// 查找結果表格渲染/操作
+function showResult(targetId, data) {
+  const lang = LANGS[currentLang];
+  const container = document.getElementById(targetId);
+  let areaType = (targetId === 'result1') ? 1 : (targetId === 'result2' ? 2 : 3);
+  if (!data || !data.length) {
+    container.innerHTML = `<em>${lang.noResult}</em>`;
+    container.dataset.rows = "[]";
+    if (areaType === 3) result3SelectedRow = null;
+    if(areaType === 1) document.getElementById('result1Hint').innerText = "";
+    if(areaType === 2) document.getElementById('result2Hint').innerText = "";
+    updateTitleCount(targetId, 0, 0);
+    return;
+  }
+  let html = `<table class="result-table"><thead><tr>
+    <th><input type="checkbox" onclick="toggleAllCheckboxes('${targetId}', this.checked)"></th>
+    <th>${lang.serialNum}</th>
+    <th onclick="sortResult('${targetId}',0)">${lang.word}</th>
+    <th onclick="sortResult('${targetId}',1)">${lang.jyutping}</th>
+    <th>${lang.operate}</th>
+  </tr></thead><tbody>`;
+  let selectedCount = 0;
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    let rowClass = '';
+    if (areaType === 3 && result3SelectedRow === i) rowClass = 'row-selected';
+    html += `<tr${rowClass ? ` class="${rowClass}"` : ''}>`;
+    html += `<td><input type="checkbox" onclick="updateSelectedCount('${targetId}')"></td>`;
+    html += `<td style="width: 30px;">${i + 1}</td>`;
+
+    let enableCol0 = false, enableCol1 = false;
+    let hintText = lang.clickToSearch;
+    // 完全匹配模式下的點擊查找邏輯
+    if (areaType <= 2) {
+      if (lastSearchMode === "exact") {
+        // 首次查找
+        if ((areaType === 1 && lastClickCol == null)) {
+          if (lastSearchType === "char") {
+            enableCol1 = true; // 詞彙查找時粵拼可點
+          } else if (lastSearchType === "jyut") {
+            enableCol0 = true; // 粵拼查找時詞彙可點
           }
         }
-        if (areaType <= 2) {
-          html += `<td style="user-select:text;${enableCol0 ? 'cursor:pointer;' : ''}" ${enableCol0 ? `class="highlight-link hover-highlight"` : ""} ${enableCol0 ? `onclick="nextSearch(${areaType},${i},0)" title="${hintText}"` : ""}>${row[0]}</td>`;
-          html += `<td style="user-select:text;${enableCol1 ? 'cursor:pointer;' : ''}" ${enableCol1 ? `class="highlight-link hover-highlight"` : ""} ${enableCol1 ? `onclick="nextSearch(${areaType},${i},1)" title="${hintText}"` : ""}>${row[1]}</td>`;
-        } else {
-          html += `<td class="copyable" ondblclick="highlightResult3Row(${i});">${row[0]}</td>`;
-          html += `<td class="copyable" ondblclick="highlightResult3Row(${i});">${row[1]}</td>`;
+        // 二次查找
+        else if ((areaType === 2 && lastClickCol != null)) {
+          if (lastClickCol === 0) {
+            enableCol1 = true; // 上次點了詞彙，這次粵拼可點
+          } else if (lastClickCol === 1) {
+            enableCol0 = true; // 上次點了粵拼，這次詞彙可點
+          }
         }
+      } else {
+        enableCol0 = enableCol1 = true; // 模糊查找都可點
+      }
+    }
+    // 檢查粵拼是否為空，如果為空則禁用點擊功能
+    if (areaType <= 2) {
+      html += `<td style="user-select:text;${enableCol0 && row[1]!== '' ? 'cursor:pointer;' : ''}" ${enableCol0 && row[1]!== '' ? `class="highlight-link hover-highlight"` : ""} ${enableCol0 && row[1]!== '' ? `onclick="nextSearch(${areaType},${i},0)" title="${hintText}"` : ""}>${row[0]}</td>`;
+      html += `<td style="user-select:text;${enableCol1 && row[1]!== '' ? 'cursor:pointer;' : ''}" ${enableCol1 && row[1]!== '' ? `class="highlight-link hover-highlight"` : ""} ${enableCol1 && row[1]!== '' ? `onclick="nextSearch(${areaType},${i},1)" title="${hintText}"` : ""}>${row[1]}</td>`;
+    } else {
+      html += `<td class="copyable" ondblclick="highlightResult3Row(${i});">${row[0]}</td>`;
+      html += `<td class="copyable" ondblclick="highlightResult3Row(${i});">${row[1]}</td>`;
+    }
 
-        html += `<td style="width: 180px;">
-            <button class="del-btn" onclick="deleteRow('${targetId}',${i});event.stopPropagation();">${lang.delete}</button>
-            <button class="copy-btn" onclick="copyRow('${targetId}',${i});event.stopPropagation();">${lang.copy}</button>
-            <button class="speak-btn" onclick="playAudio('${row[1]}');event.stopPropagation();">${lang.speak}</button>
-          </td>`;
-        html += '</tr>';
-      }
-      html += '</tbody></table>';
-      container.innerHTML = html;
-      container.dataset.rows = JSON.stringify(data);
+    html += `<td style="width: 180px;">
+        <button class="del-btn" onclick="deleteRow('${targetId}',${i});event.stopPropagation();">${lang.delete}</button>
+        <button class="copy-btn" onclick="copyRow('${targetId}',${i});event.stopPropagation();">${lang.copy}</button>
+        <button class="speak-btn" onclick="playAudio('${row[1]}');event.stopPropagation();">${lang.speak}</button>
+      </td>`;
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  container.innerHTML = html;
+  container.dataset.rows = JSON.stringify(data);
 
-      // ======= 提示顯示部分 ======
-      if (areaType === 1) {
-        if (lastSearchMode === "fuzzy") {
-          document.getElementById('result1Hint').innerText = lang.fuzzyResult1Hint;
-          document.getElementById('result2Hint').innerText = "";
-        } else {
-          document.getElementById('result1Hint').innerText = lastSearchType === "jyut"
-            ? LANGS[currentLang].result1HintJyut
-            : LANGS[currentLang].result1HintChar;
-          document.getElementById('result2Hint').innerText = "";
+  // 更新選中數量
+  updateSelectedCount(targetId);
+
+  // ======= 提示顯示部分 ======
+  if (areaType === 1) {
+    if (lastSearchMode === "fuzzy") {
+      document.getElementById('result1Hint').innerText = lang.fuzzyResult1Hint;
+      document.getElementById('result2Hint').innerText = "";
+    } else {
+      document.getElementById('result1Hint').innerText = lastSearchType === "jyut"
+        ? LANGS[currentLang].result1HintJyut
+        : LANGS[currentLang].result1HintChar;
+      document.getElementById('result2Hint').innerText = "";
+    }
+  }
+  if (areaType === 2) {
+    if (lastSearchMode === "fuzzy") {
+      document.getElementById('result2Hint').innerText = lang.fuzzyResult2Hint;
+    } else {
+      document.getElementById('result2Hint').innerText = lastClickCol === 0
+        ? lang.result2HintJyut
+        : lang.result2HintChar;
+    }
+  }
+}
+
+    function updateTitleCount(targetId, total, selected) {
+      const lang = LANGS[currentLang];
+      const titleElement = document.getElementById(`${targetId}Title`);
+      titleElement.innerText = `${lang[`${targetId}Title`]}${lang.totalCount}${total}${lang.countUnit}${lang.selectedCount}${selected}${lang.countUnit}`;
+    }
+
+    function updateSelectedCount(targetId) {
+      const table = document.querySelector(`#${targetId} table`);
+      const checkboxes = table.querySelectorAll('tbody input[type="checkbox"]');
+      let selectedCount = 0;
+      checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+          selectedCount++;
         }
-      }
-      if (areaType === 2) {
-        if (lastSearchMode === "fuzzy") {
-          document.getElementById('result2Hint').innerText = lang.fuzzyResult2Hint;
-        } else {
-          document.getElementById('result2Hint').innerText = lastClickCol === 0
-            ? lang.result2HintJyut
-            : lang.result2HintChar;
-        }
-      }
+      });
+      let data;
+      try { data = JSON.parse(document.getElementById(targetId).dataset.rows || '[]'); } catch { data = []; }
+      updateTitleCount(targetId, data.length, selectedCount);
+    }
+
+    function toggleAllCheckboxes(targetId, checked) {
+      const table = document.querySelector(`#${targetId} table`);
+      const checkboxes = table.querySelectorAll('tbody input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = checked;
+      });
+      updateSelectedCount(targetId);
     }
 
     function nextSearch(area, idx, col) {
@@ -683,7 +838,7 @@ Call loan	ko1 lou1
       tempTextarea.style.position = 'fixed'; // 防止跳動
       tempTextarea.style.opacity = 0;
       document.body.appendChild(tempTextarea);
-     tempTextarea.focus();
+      tempTextarea.focus();
       tempTextarea.select();
       try {
         document.execCommand('copy');
@@ -694,12 +849,10 @@ Call loan	ko1 lou1
       document.body.removeChild(tempTextarea);
     }
 
-    // 全部複製
-    function dedupCopyToClipboard(targetId) {
-      const lang = LANGS[currentLang];
+    // 新增：去重函數
+    function dedupResult(targetId) {
       let data;
       try { data = JSON.parse(document.getElementById(targetId).dataset.rows || '[]'); } catch { data = []; }
-      if (!data.length) return;
       const seen = new Set();
       const dedup = [];
       for (const r of data) {
@@ -709,9 +862,9 @@ Call loan	ko1 lou1
           dedup.push(r);
         }
       }
-      const txt = dedup.map(r => r.join('\t')).join('\n');
-      safeCopyText(txt, lang.allCopied);
+      showResult(targetId, dedup);
     }
+
     function clearResult(targetId) {
       showResult(targetId, []);
     }
@@ -765,6 +918,55 @@ Call loan	ko1 lou1
     }
     function scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function multiCopy(targetId) {
+      const lang = LANGS[currentLang];
+      let data;
+      try { data = JSON.parse(document.getElementById(targetId).dataset.rows || '[]'); } catch { data = []; }
+      const table = document.querySelector(`#${targetId} table`);
+      const checkboxes = table.querySelectorAll('tbody input[type="checkbox"]');
+      const selectedRows = [];
+      checkboxes.forEach((checkbox, idx) => {
+        if (checkbox.checked) {
+          selectedRows.push(data[idx]);
+        }
+      });
+      if (selectedRows.length === 0) return;
+      const txt = selectedRows.map(r => r.join('\t')).join('\n');
+      safeCopyText(txt, lang.allCopied);
+    }
+    function multiDelete(targetId) {
+      let data;
+      try { data = JSON.parse(document.getElementById(targetId).dataset.rows || '[]'); } catch { data = []; }
+      const table = document.querySelector(`#${targetId} table`);
+      const checkboxes = table.querySelectorAll('tbody input[type="checkbox"]');
+      const newData = [];
+      checkboxes.forEach((checkbox, idx) => {
+        if (!checkbox.checked) {
+          newData.push(data[idx]);
+        }
+      });
+      if (targetId === 'result3') {
+        result3SelectedRow = null;
+      }
+      showResult(targetId, newData);
+    }
+    // 新增：反选函數
+    function invertSelection(targetId) {
+      const table = document.querySelector(`#${targetId} table`);
+      const checkboxes = table.querySelectorAll('tbody input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked =!checkbox.checked;
+      });
+      updateSelectedCount(targetId);
+    }
+    function cancelSelection(targetId) {
+      const table = document.querySelector(`#${targetId} table`);
+      const checkboxes = table.querySelectorAll('tbody input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      updateSelectedCount(targetId);
     }
     document.getElementById('searchInput').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') searchDict();
