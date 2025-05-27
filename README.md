@@ -1,35 +1,8 @@
 # Cantonese Search Tool
 Summary of reading and writing | 總結粵語讀法和寫法 | 总结粤语读法和写法
 
-記事簿打開.html文件
-在兩“`”之間填入詞典
-<script>
-window.jyutpingDictText = `
-
-填入詞典，詞匯和粵拼之間用製表符隔開
-
-`;
-</script>
 <br>
-<br>
-例如：<br>
-<script><br>
-window.jyutpingDictText = `<br>
-廣東話	gwong2 dung1 waa2<br>
-67	luk1 cat6<br>
-有	jau5	11175341<br>
-愛好	oi3 hou3<br>
-愛好	ngoi3 hou3<br>
-啊 	aa3<br>
-啊	a6<br>
-happy	he pi<br>
-Quali	kol1 li2<br>
-亞Sir	aa3 soe4<br>
-老rob	lou5 lap1<br>
-Call loan	ko1 lou1<br>
-白話<br>
-`;<br>
-</script><br>
+詞典數據來自小狼毫-粵拼輸入法、打得輸入法、粵典<br>
 <br>
 <br>
 網頁設計思路<br>
