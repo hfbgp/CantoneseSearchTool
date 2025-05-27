@@ -2,7 +2,7 @@
 Summary of reading and writing | 總結粵語讀法和寫法 | 总结粤语读法和写法
 
 <br>
-詞典數據來自小狼毫-粵拼輸入法、打得輸入法、粵典<br>
+詞典數據來自小狼毫-粵拼輸入法https://github.com/rime/rime-cantonese、打得輸入法https://github.com/TypeDuck-HK、粵典https://words.hk<br>
 <br>
 <br>
 網頁設計思路<br>
