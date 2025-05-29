@@ -565,11 +565,13 @@ function searchDict() {
         result = dictArray.filter(row => regex.test(row[0]) || regex.test(row[1]));
         lastSearchType = 'both';
         lastSource = 'both';
-      } catch (error) {
+      }
+      catch (error) {
         alert('正则表达式格式错误: ' + error.message);
         return;
       }
-    } else {
+    }
+    else {
       let foundInWord = dictArray.some(row => row[0] === input);
       let foundInJyut = dictArray.some(row => row[1] === input);
       if (isChinese || isAllNumOrSpace || foundInWord) {
@@ -577,12 +579,14 @@ function searchDict() {
         result = dictArray.filter(row => row[0] === input);
         lastSearchType = 'char';
         lastSource = 'word';
-      } else if (foundInJyut) {
+      }
+      else if (foundInJyut) {
         // 粵拼查找
         result = dictArray.filter(row => row[1] === input);
         lastSearchType = 'jyut';
         lastSource = 'jyutping';
-      } else {
+      }
+      else {
         // 兩列都查全等
         result = dictArray.filter(row => row[0] === input || row[1] === input);
         lastSearchType = 'both';
@@ -590,30 +594,35 @@ function searchDict() {
       }
     }
     lastClickCol = null; // 初始查找未點擊過任何列
-  } else if (mode === 'fuzzy') {
+  }
+  else if (mode === 'fuzzy') {
     if (isRegex) {
       try {
         const regex = new RegExp(input, 'i'); // 创建正则表达式对象，忽略大小写
         result = dictArray.filter(row => regex.test(row[0].toLowerCase()) || regex.test(removeTone(row[1])));
         lastSearchType = 'both';
         lastSource = 'both';
-      } catch (error) {
+      }
+      catch (error) {
         alert('正则表达式格式错误: ' + error.message);
         return;
       }
-    } else {
+    }
+    else {
       let res = [];
       if (isChinese) {
         let cleanedInput = input.replace(/\s+/g, '');
         res = dictArray.filter(row => row[0].replace(/\s+/g, '').includes(cleanedInput));
         lastSearchType = 'char';
         lastSource = 'word';
-      } else if (isAllNumOrSpace) {
+      }
+      else if (isAllNumOrSpace) {
         let cleanedInput = input.replace(/\s+/g, '');
         res = dictArray.filter(row => row[0].replace(/\s+/g, '').includes(cleanedInput));
         lastSearchType = 'char';
         lastSource = 'word';
-      } else {
+      }
+      else {
         // 拼音和英文模糊查：全部去聲調
         let matchStrings = expandJyutpingCombinations(input).map(removeTone);
         let inputNoTone = removeTone(input);
