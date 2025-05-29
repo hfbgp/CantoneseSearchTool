@@ -537,89 +537,115 @@ function normalizeSpace(str) {
         .filter(Boolean);
     }
 
-    // 主查找函數
-    function searchDict() {
-      const lang = LANGS[currentLang];
-      const inputRaw = document.getElementById('searchInput').value;
-      const input = normalizeSpace(inputRaw);
-      const mode = document.querySelector('[name="matchMode"]:checked').value;
-      lastSearchMode = mode;
-      lastClickCol = null;
-      if (!input) {
-        showResult('result1', []);
-        showResult('result2', []);
-        showResult('result3', []);
-        document.getElementById('result1Hint').innerText = "";
-        document.getElementById('result2Hint').innerText = "";
+// 主查找函數
+function searchDict() {
+  const lang = LANGS[currentLang];
+  const inputRaw = document.getElementById('searchInput').value;
+  const input = normalizeSpace(inputRaw);
+  const mode = document.querySelector('[name="matchMode"]:checked').value;
+  lastSearchMode = mode;
+  lastClickCol = null;
+  if (!input) {
+    showResult('result1', []);
+    showResult('result2', []);
+    showResult('result3', []);
+    document.getElementById('result1Hint').innerText = "";
+    document.getElementById('result2Hint').innerText = "";
+    return;
+  }
+  let result = [];
+  const isChinese = /[\u4e00-\u9fa5]/.test(input);
+  const isAllNumOrSpace = /^[\d\s]+$/.test(input);
+  const isRegex = /[.*+?^${}()|[\]\\]/.test(input); // 判断输入是否包含正则表达式特殊字符
+
+  if (mode === 'exact') {
+    if (isRegex) {
+      try {
+        const regex = new RegExp(input, 'i'); // 创建正则表达式对象，忽略大小写
+        result = dictArray.filter(row => regex.test(row[0]) || regex.test(row[1]));
+        lastSearchType = 'both';
+        lastSource = 'both';
+      } catch (error) {
+        alert('正则表达式格式错误: ' + error.message);
         return;
       }
-      let result = [];
-      const isChinese = /[\u4e00-\u9fa5]/.test(input);
-      const isAllNumOrSpace = /^[\d\s]+$/.test(input);
-      if (mode === 'exact') {
-        let foundInWord = dictArray.some(row => row[0] === input);
-        let foundInJyut = dictArray.some(row => row[1] === input);
-        if (isChinese || isAllNumOrSpace || foundInWord) {
-          // 詞彙查找
-          result = dictArray.filter(row => row[0] === input);
-          lastSearchType = 'char';
-          lastSource = 'word';
-        } else if (foundInJyut) {
-          // 粵拼查找
-          result = dictArray.filter(row => row[1] === input);
-          lastSearchType = 'jyut';
-          lastSource = 'jyutping';
-        } else {
-          // 兩列都查全等
-          result = dictArray.filter(row => row[0] === input || row[1] === input);
-          lastSearchType = 'both';
-          lastSource = 'both';
-        }
-        lastClickCol = null; // 初始查找未點擊過任何列
-      } else if (mode === 'fuzzy') {
-        let res = [];
-        if (isChinese) {
-          let cleanedInput = input.replace(/\s+/g, '');
-          res = dictArray.filter(row => row[0].replace(/\s+/g, '').includes(cleanedInput));
-          lastSearchType = 'char';
-          lastSource = 'word';
-        } else if (isAllNumOrSpace) {
-          let cleanedInput = input.replace(/\s+/g, '');
-          res = dictArray.filter(row => row[0].replace(/\s+/g, '').includes(cleanedInput));
-          lastSearchType = 'char';
-          lastSource = 'word';
-        } else {
-          // 拼音和英文模糊查：全部去聲調
-          let matchStrings = expandJyutpingCombinations(input).map(removeTone);
-          let inputNoTone = removeTone(input);
-          if (!matchStrings.includes(inputNoTone)) matchStrings.push(inputNoTone);
-          dictArray.forEach(row => {
-            let wordCol = row[0].toLowerCase();
-            let jyutColNoTone = removeTone(row[1]);
-            for (let str of matchStrings) {
-              if (wordCol.includes(str) || jyutColNoTone.includes(str)) {
-                res.push(row);
-                break;
-              }
-            }
-          });
-          lastSearchType = 'both';
-          lastSource = 'both';
-        }
-        lastClickCol = null;
-        result = res;
-        // 模糊匹配模式下排序
-        result = result.sort((a, b) => {
-          const scoreA = getSimilarityScore(a, input);
-          const scoreB = getSimilarityScore(b, input);
-          return scoreB - scoreA;
-        });
+    } else {
+      let foundInWord = dictArray.some(row => row[0] === input);
+      let foundInJyut = dictArray.some(row => row[1] === input);
+      if (isChinese || isAllNumOrSpace || foundInWord) {
+        // 詞彙查找
+        result = dictArray.filter(row => row[0] === input);
+        lastSearchType = 'char';
+        lastSource = 'word';
+      } else if (foundInJyut) {
+        // 粵拼查找
+        result = dictArray.filter(row => row[1] === input);
+        lastSearchType = 'jyut';
+        lastSource = 'jyutping';
+      } else {
+        // 兩列都查全等
+        result = dictArray.filter(row => row[0] === input || row[1] === input);
+        lastSearchType = 'both';
+        lastSource = 'both';
       }
-      showResult('result1', result);
-      showResult('result2', []);
-      showResult('result3', []);
-      // 提示邏輯將移至 showResult 內
     }
+    lastClickCol = null; // 初始查找未點擊過任何列
+  } else if (mode === 'fuzzy') {
+    if (isRegex) {
+      try {
+        const regex = new RegExp(input, 'i'); // 创建正则表达式对象，忽略大小写
+        result = dictArray.filter(row => regex.test(row[0].toLowerCase()) || regex.test(removeTone(row[1])));
+        lastSearchType = 'both';
+        lastSource = 'both';
+      } catch (error) {
+        alert('正则表达式格式错误: ' + error.message);
+        return;
+      }
+    } else {
+      let res = [];
+      if (isChinese) {
+        let cleanedInput = input.replace(/\s+/g, '');
+        res = dictArray.filter(row => row[0].replace(/\s+/g, '').includes(cleanedInput));
+        lastSearchType = 'char';
+        lastSource = 'word';
+      } else if (isAllNumOrSpace) {
+        let cleanedInput = input.replace(/\s+/g, '');
+        res = dictArray.filter(row => row[0].replace(/\s+/g, '').includes(cleanedInput));
+        lastSearchType = 'char';
+        lastSource = 'word';
+      } else {
+        // 拼音和英文模糊查：全部去聲調
+        let matchStrings = expandJyutpingCombinations(input).map(removeTone);
+        let inputNoTone = removeTone(input);
+        if (!matchStrings.includes(inputNoTone)) matchStrings.push(inputNoTone);
+        dictArray.forEach(row => {
+          let wordCol = row[0].toLowerCase();
+          let jyutColNoTone = removeTone(row[1]);
+          for (let str of matchStrings) {
+            if (wordCol.includes(str) || jyutColNoTone.includes(str)) {
+              res.push(row);
+              break;
+            }
+          }
+        });
+        lastSearchType = 'both';
+        lastSource = 'both';
+      }
+      lastClickCol = null;
+      result = res;
+      // 模糊匹配模式下排序
+      result = result.sort((a, b) => {
+        const scoreA = getSimilarityScore(a, input);
+        const scoreB = getSimilarityScore(b, input);
+        return scoreB - scoreA;
+      });
+    }
+  }
+  showResult('result1', result);
+  showResult('result2', []);
+  showResult('result3', []);
+  // 提示邏輯將移至 showResult 內
+}
 
     // 計算相似度評分
     function getSimilarityScore(row, input) {
