@@ -143,11 +143,11 @@
   <div class="lang-switch">
     <button class="btn" id="switchLangBtn" onclick="switchLang()"></button>
   </div>
-  <h1 id="headline">粵語檢索工具</h1>
+  <h1 id="headline">粵拼詞彙檢索工具</h1>
   <div class="container">
     <div class="search-bar">
-      <label for="searchInput" id="inputLabel">輸入粵拼或詞彙：</label>
-      <input id="searchInput" type="text" placeholder="英文、數字（例：Quali、67、ngoi3 hou3、ngoi hou、oi hou、oi3 hou3）" autocomplete="off" style="width:100%;max-width:400px;"/>
+      <label for="searchInput" id="inputLabel">輸入詞彙或粵拼：</label>
+      <input id="searchInput" type="text" placeholder="英文、數字（例：Quali、67、ngoi3 hou3、oi3 hou3、ngoi hou、oi hou）" autocomplete="off" style="width:100%;max-width:400px;"/>
       <span class="search-mode" id="searchMode">
         <label><input type="radio" name="matchMode" value="exact" checked id="modeExact">完全匹配</label>
         <label><input type="radio" name="matchMode" value="fuzzy" id="modeFuzzy" title="查找時間可能會比較長">模糊匹配</label>
@@ -232,6 +232,23 @@
   </div>
   <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()">回到頂部</button>
   <script>
+    // 新增：初始化 placeholder
+    function updatePlaceholder() {
+      const lang = LANGS[currentLang];
+      const mode = document.querySelector('[name="matchMode"]:checked').value;
+      const searchInput = document.getElementById('searchInput');
+      if (mode === 'exact') {
+        searchInput.placeholder = lang.searchPlaceholderExact || lang.searchPlaceholder;
+      } else if (mode === 'fuzzy') {
+        searchInput.placeholder = lang.searchPlaceholderFuzzy || lang.searchPlaceholder;
+      }
+    }
+
+    // 新增：为单选框添加 change 事件监听器
+    const matchModeRadios = document.querySelectorAll('[name="matchMode"]');
+    matchModeRadios.forEach(radio => {
+      radio.addEventListener('change', updatePlaceholder);
+    });
     // ==== 拼音變體與去聲調輔助 ====
 function removeTone(str) {
   return (str||'').replace(/[1-6]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -303,8 +320,10 @@ function normalizeSpace(str) {
       'hk': {
         title: "粵語檢索工具",
         headline: "粵語檢索工具",
-        inputLabel: "輸入粵拼或詞彙：",
-        searchPlaceholder: "英文、數字（例：Quali、67、ngoi3 hou3、ngoi hou、oi hou、oi3 hou3）",
+        inputLabel: "輸入詞彙或粵拼：",
+        searchPlaceholder: "英文、數字（例：Quali、67、ngoi3 hou3、oi3 hou3）",
+        searchPlaceholderExact: "英文、數字（例：Quali、67、ngoi3 hou3、oi3 hou3）",
+        searchPlaceholderFuzzy: "英、數（例：call、7、ngoi hou、oi hou）",
         modeExact: "完全匹配",
         modeFuzzy: "模糊匹配",
         fuzzyTip: "查找時間可能會比較長",
@@ -351,8 +370,10 @@ function normalizeSpace(str) {
       'cn': {
         title: "粤语检索工具",
         headline: "粤语检索工具",
-        inputLabel: "输入粤拼或词汇：",
-        searchPlaceholder: "英文、数字（例：Quali、67、ngoi3 hou3、ngoi hou、oi hou、oi3 hou3）",
+        inputLabel: "输入词汇或粤拼：",
+        searchPlaceholder: "英文、数字（例：Quali、67、ngoi3 hou3、oi3 hou3）",
+        searchPlaceholderExact: "英文、数字（例：Quali、67、ngoi3 hou3、oi3 hou3）",
+        searchPlaceholderFuzzy: "英、数（例：call、7、ngoi hou、oi hou）",
         modeExact: "完全匹配",
         modeFuzzy: "模糊匹配",
         fuzzyTip: "查找时间可能会比较长",
@@ -395,12 +416,15 @@ function normalizeSpace(str) {
         // 新增按鈕名稱
         dedup: "去重",
         invertSelection: "反选"
+
       },
       'en': {
         title: "Cantonese Search Tool",
         headline: "Cantonese Search Tool",
-        inputLabel: "Enter Jyutping or Word:",
-        searchPlaceholder: "English, numbers, or Cantonese (e.g. Quali, 7, ngoi3 hou3, ngoi hou, oi hou, oi3 hou3)",
+        inputLabel: "Enter Word or Jyutping :",
+        searchPlaceholder: "English, numbers, or Cantonese (e.g. Quali、67、ngoi3 hou3、oi3 hou3",
+        searchPlaceholderExact: "English, numbers, or Cantonese (e.g. Quali、67、ngoi3 hou3、oi3 hou3）",
+        searchPlaceholderFuzzy: "Eng, No., or Cantonese (e.g. call、7、ngoi hou、oi hou）",
         modeExact: "Exact Match",
         modeFuzzy: "Fuzzy Match",
         fuzzyTip: "Fuzzy search may take longer",
@@ -1001,6 +1025,7 @@ function showResult(targetId, data) {
       loadDict();
       applyLang();
     });
+    window.addEventListener('load', updatePlaceholder);
   </script>
 </body>
 </html>
