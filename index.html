@@ -237,7 +237,6 @@
       const lang = LANGS[currentLang];
       const mode = document.querySelector('[name="matchMode"]:checked').value;
       const searchInput = document.getElementById('searchInput');
-            searchInput.placeholder = lang.searchPlaceholderExact || lang.searchPlaceholder;
       if (mode === 'exact') {
         searchInput.placeholder = lang.searchPlaceholderExact || lang.searchPlaceholder;
       } else if (mode === 'fuzzy') {
