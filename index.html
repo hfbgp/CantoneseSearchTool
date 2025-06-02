@@ -519,7 +519,7 @@ function normalizeSpace(str) {
       let dataStart = 0;
       for (let i = 0; i < lines.length; i++) {
         const l = lines[i].trim();
-        if (l === '...' || l === '---') {
+        if (l === '...') {
           dataStart = i + 1;
           break;
         }
@@ -710,20 +710,27 @@ function showResult(targetId, data) {
     // 完全匹配模式下的點擊查找邏輯
     if (areaType <= 2) {
       if (lastSearchMode === "exact") {
-        // 首次查找
-        if ((areaType === 1 && lastClickCol == null)) {
-          if (lastSearchType === "char") {
-            enableCol1 = true; // 詞彙查找時粵拼可點
-          } else if (lastSearchType === "jyut") {
-            enableCol0 = true; // 粵拼查找時詞彙可點
+        const input = document.getElementById('searchInput').value;
+        const isRegex = /[.*+?^${}()|[\]\\]/.test(input); // 判断输入是否包含正则表达式特殊字符
+        if (isRegex) {
+          // 正則表達式運算，詞彙列和粵拼列都可點
+          enableCol0 = enableCol1 = true;
+        } else {
+          // 首次查找
+          if ((areaType === 1 && lastClickCol == null)) {
+            if (lastSearchType === "char") {
+              enableCol1 = true; // 詞彙查找時粵拼可點
+            } else if (lastSearchType === "jyut") {
+              enableCol0 = true; // 粵拼查找時詞彙可點
+            }
           }
-        }
-        // 二次查找
-        else if ((areaType === 2 && lastClickCol != null)) {
-          if (lastClickCol === 0) {
-            enableCol1 = true; // 上次點了詞彙，這次粵拼可點
-          } else if (lastClickCol === 1) {
-            enableCol0 = true; // 上次點了粵拼，這次詞彙可點
+          // 二次查找
+          else if ((areaType === 2 && lastClickCol != null)) {
+            if (lastClickCol === 0) {
+              enableCol1 = true; // 上次點了詞彙，這次粵拼可點
+            } else if (lastClickCol === 1) {
+              enableCol0 = true; // 上次點了粵拼，這次詞彙可點
+            }
           }
         }
       } else {
